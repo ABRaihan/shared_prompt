@@ -1,14 +1,8 @@
 import { User } from "@models/mongoose";
+import { UserSchema } from "@models/typescript/user";
 import { connectToDB } from "@utils";
 import NextAuth from "next-auth/next";
 import GoogleProvider from "next-auth/providers/google";
-
-type CustomUser = {
-  name?: string | null | undefined;
-  email?: string | null | undefined;
-  image?: string | null | undefined;
-  id: string; // Add the 'id' property
-};
 
 const handler = NextAuth({
   providers: [
@@ -23,7 +17,7 @@ const handler = NextAuth({
         email: session.user?.email,
       });
       if (session.user) {
-        (session.user as CustomUser).id = sessionUser._id.toString();
+        (session.user as UserSchema).id = sessionUser._id.toString();
       }
       return session;
     },

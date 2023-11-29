@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 export const POST = async (req: Request) => {
   const user_id = headers().get("userId");
   if (!user_id) {
-    return new Response(JSON.stringify({ message: "userId is required" }), { status: 400 });
+    return new Response(JSON.stringify({ message: "Unauthorized user" }), { status: 400 });
   }
   const body: PromptFromSchema = await req.json();
   if (!body.prompt || !body.tag) {
@@ -25,6 +25,20 @@ export const POST = async (req: Request) => {
 
     return new Response(JSON.stringify(newPrompt), { status: 201 });
   } catch (error) {
-    console.log(error);
+    return new Response(JSON.stringify(error), { status: 500 });
+  }
+};
+
+export const GET = async (req: Request) => {
+  // const user_id = headers().get("userId");
+  // if (!user_id) {
+  //   return new Response(JSON.stringify({ message: "Unauthorized user" }), { status: 400 });
+  // }
+  try {
+    await connectToDB();
+    const prompts = await Prompt.find({}).populate("creator");
+    return new Response(JSON.stringify(prompts), { status: 200 });
+  } catch (error) {
+    return new Response(JSON.stringify(error), { status: 500 });
   }
 };

@@ -1,6 +1,7 @@
 "use client";
 import { Form } from "@components/form";
-import { PromptFromSchema } from "@models";
+import { PromptFromSchema, UserSchema } from "@models";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -11,6 +12,7 @@ const CreatePrompt = () => {
 
   //? @___Router Hooks___@
   const router = useRouter();
+  const { data: session } = useSession();
 
   //? @___Hook Form___@
   const methods = useForm<PromptFromSchema>({
@@ -21,12 +23,23 @@ const CreatePrompt = () => {
   });
 
   //? @___Handler Functions___@
-  const handleCreatePrompt = (form: PromptFromSchema) => {
+  const handleCreatePrompt = async (form: PromptFromSchema) => {
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const response = await fetch("/api/prompt", {
+        method: "POST",
+        body: JSON.stringify(form),
+        headers: {
+          userId: `${(session?.user as UserSchema)?.id}`,
+        },
+      });
+      if (response.ok) throw new Error();
+      methods.reset();
       router.push("/");
-    }, 2500);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
   };
   return (
     <FormProvider {...methods}>
